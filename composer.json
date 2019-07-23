@@ -1,0 +1,6 @@
+{
+    "name": "raviteja/yas_life",
+    "description": "This library will gives you the functions to get similar countries list and langugaes based on countries",
+    "type": "project",
+    "require": {}
+}
