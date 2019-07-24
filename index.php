@@ -60,12 +60,21 @@ class indexClass {
 	 *
 	 */
 	public static function getCountries($country) {
-		$url = \Yas\Index\indexClass::REST_URL."name/{$country}?fullText=true";
+		$url = \Yas\Index\indexClass::REST_URL."name/{$country}?fullText=true%27";
 		$json_data = \Yas\Index\indexClass::getRestResult($url);
-		$lang_code = $json_data[0]->alpha2Code;
-		$similar_countries = \Yas\Index\indexClass::getSimilarCountries($lang_code);
-		$fText =  "Country language code: ".strtolower($lang_code)."\n";
-		$fText .= \Yas\Index\indexClass::makeUpper($country)." speaks same language with these countries: ".$similar_countries."\n";
+		if (!isset($json_data[0]->status)) {
+			$lang_code = \Yas\Index\indexClass::getLanguageCodes($json_data[0]->languages);
+			$similar_countries = \Yas\Index\indexClass::getSimilarCountries($lang_code, $json_data[0]->alpha2Code);
+			$fText =  "Country language code(s): ".strtolower( implode(", ",  $lang_code))."\n";
+			
+			if ($similar_countries != NULL)
+				$fText .= \Yas\Index\indexClass::makeUpper($country)." speaks same language with these countries: ".$similar_countries."\n";
+			else
+				$fText .= "No matches for Country ".\Yas\Index\indexClass::makeUpper($country);
+		} else {
+			$fText = "Not a valid Country name. Please check";
+		}
+		
 		return $fText;
 	}
 	/**
@@ -76,15 +85,37 @@ class indexClass {
 	 * @return   string $scountries
 	 *
 	 */
-	public static function getSimilarCountries($lang_code) {
-		$url = \Yas\Index\indexClass::REST_URL."lang/{$lang_code}";
-		$json_data = \Yas\Index\indexClass::getRestResult($url);
-		foreach($json_data as $country) {
-			$scountries[] = $country->name;
+	public static function getSimilarCountries($lang_codes, $cCode) {
+		foreach($lang_codes as $lang_code) {
+			$url = \Yas\Index\indexClass::REST_URL."lang/{$lang_code}";
+			$json_data = \Yas\Index\indexClass::getRestResult($url);
+			if (!isset($json_data[0]->status)) {
+				foreach($json_data as $country) {
+					if($country->alpha2Code != $cCode)
+						$scountries[] = $country->name;
+				}
+			}
+			$json_data = '';
 		}
 		
 		return implode(", ",  $scountries);
 	}
+	
+	/**
+	 *
+	 * Reads the country names and checks whether they had same langugage
+	 *
+	 * @param    strings $city1, city2
+	 * @return   echo the output
+	 *
+	 */
+	public static function getLanguageCodes($langugaes) {
+		foreach ($langugaes as $lang) {
+			$lang_array[] = $lang->iso639_1;
+		}
+		return $lang_array;
+	}
+	
 	/**
 	 *
 	 * Reads the country names and checks whether they had same langugage
@@ -94,24 +125,32 @@ class indexClass {
 	 *
 	 */
 	public static function compareCities($city1, $city2) {
-		$url1 = \Yas\Index\indexClass::REST_URL."name/{$city1}?fullText=true";
-		$url2 = \Yas\Index\indexClass::REST_URL."name/{$city2}?fullText=true";
+		$url1 = \Yas\Index\indexClass::REST_URL."name/{$city1}?fullText=true%27";
+		$url2 = \Yas\Index\indexClass::REST_URL."name/{$city2}?fullText=true%27";
 		
 		$json_data1 = \Yas\Index\indexClass::getRestResult($url1);
-		foreach ($json_data1 as $country1) {
-			$lang_array1[] = $country1->languages[0]->iso639_1;
-		}
-		$json_data2 = \Yas\Index\indexClass::getRestResult($url2);
-		
-		foreach ($json_data2 as $country2) {
-			$lang_array2[] = $country1->languages[0]->iso639_1;
-		}
-		
-		$final_array = array_intersect($lang_array1, $lang_array1);
-		if (empty($final_array)) {
-			$fText = "{$city1} and {$city2} do not speak the same language\n";
+		if (!isset($json_data1[0]->status)) {
+			foreach ($json_data1 as $country1) {
+				$lang_array1[] = $country1->languages[0]->iso639_1;
+			}
 		} else {
-			$fText = "{$city1} and {$city2} do speak the same language\n";
+			return "First Country name paramter is not a valid value: {$city1}";
+		}
+		
+		$json_data2 = \Yas\Index\indexClass::getRestResult($url2);
+		if (!isset($json_data2[0]->status)) {
+			foreach ($json_data2 as $country2) {
+				$lang_array2[] = $country2->languages[0]->iso639_1;
+			}
+		} else {
+			return "Second Country name paramter is not a valid value: {$city2}";
+		}
+		
+		$final_array = array_intersect($lang_array1, $lang_array2);
+		if (empty($final_array)) {
+			$fText = "{$city1} and {$city2} do not speak the same language";
+		} else {
+			$fText = "{$city1} and {$city2} do speak the same language";
 		}
 		
 		return $fText;
@@ -134,7 +173,14 @@ class indexClass {
 			echo curl_error($ch);
 		}
 		curl_close($ch);
-		return json_decode($json);
+		
+		$data = $json;
+		//Get the first character.
+		$firstCharacter = $data[0];
+		if($firstCharacter == '{') {
+			$data = "[".$data."]";
+		}
+		return json_decode($data);
 	}
 	/**
 	 *
@@ -153,10 +199,10 @@ class indexClass {
  */
  if(isset($argv)) {
 	$arguments = $argv;
-
 	$output = \Yas\Index\indexClass::getResult($arguments);
 
 	echo $output;
+	echo "\n";
 }
 
 
