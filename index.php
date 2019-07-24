@@ -14,11 +14,6 @@
 namespace Yas\Index;
 
 /**
- * User inputs
- */
-$arguments = $argv;
-
-/**
  * This calss simplifies the Json results received based on 
  * 		user input
  *  
@@ -46,10 +41,10 @@ class indexClass {
 			$num_of_args = count($arguments);
 			switch ($num_of_args) {
 				case 2:
-					\Yas\Index\indexClass::getCountries($arguments[1]);
+					return \Yas\Index\indexClass::getCountries($arguments[1]);
 					break;
 				case 3:
-					\Yas\Index\indexClass::compareCities($arguments[1], $arguments[2]);
+					return \Yas\Index\indexClass::compareCities($arguments[1], $arguments[2]);
 					break;
 				default:
 					trigger_error("Invalid number of Arguments", E_USER_NOTICE);
@@ -69,8 +64,9 @@ class indexClass {
 		$json_data = \Yas\Index\indexClass::getRestResult($url);
 		$lang_code = $json_data[0]->alpha2Code;
 		$similar_countries = \Yas\Index\indexClass::getSimilarCountries($lang_code);
-		echo "Country language code: ".strtolower($lang_code)."\n";
-		echo \Yas\Index\indexClass::makeUpper($country)." speaks same language with these countries: ".$similar_countries."\n";
+		$fText =  "Country language code: ".strtolower($lang_code)."\n";
+		$fText .= \Yas\Index\indexClass::makeUpper($country)." speaks same language with these countries: ".$similar_countries."\n";
+		return $fText;
 	}
 	/**
 	 *
@@ -102,23 +98,23 @@ class indexClass {
 		$url2 = \Yas\Index\indexClass::REST_URL."name/{$city2}?fullText=true";
 		
 		$json_data1 = \Yas\Index\indexClass::getRestResult($url1);
-		$json_data2 = \Yas\Index\indexClass::getRestResult($url2);
-		
 		foreach ($json_data1 as $country1) {
 			$lang_array1[] = $country1->languages[0]->iso639_1;
 		}
+		$json_data2 = \Yas\Index\indexClass::getRestResult($url2);
 		
 		foreach ($json_data2 as $country2) {
 			$lang_array2[] = $country1->languages[0]->iso639_1;
 		}
+		
 		$final_array = array_intersect($lang_array1, $lang_array1);
 		if (empty($final_array)) {
-			echo "{$city1} and {$city2} do not speak the same language";
-			echo "\n";
+			$fText = "{$city1} and {$city2} do not speak the same language\n";
 		} else {
-			echo "{$city1} and {$city2} do speak the same language";
-			echo "\n";
+			$fText = "{$city1} and {$city2} do speak the same language\n";
 		}
+		
+		return $fText;
 	}
 	/**
 	 *
@@ -152,9 +148,16 @@ class indexClass {
 		return ucfirst($arg);
 	}
 }
+/**
+ * User inputs
+ */
+ if(isset($argv)) {
+	$arguments = $argv;
 
+	$output = \Yas\Index\indexClass::getResult($arguments);
 
-\Yas\Index\indexClass::getResult($arguments);
+	echo $output;
+}
 
 
  

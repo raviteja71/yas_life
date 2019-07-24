@@ -2,5 +2,13 @@
     "name": "raviteja/yas_life",
     "description": "This library will gives you the functions to get similar countries list and langugaes based on countries",
     "type": "project",
-    "require": {}
+    "require": {},
+    "require-dev": {
+	 "phpunit/phpunit": "^8.2"
+	 },
+	 "autoload": {
+	 "psr-0": {
+	 "UnitTestFiles": ""
+	 }
+    }
 }
