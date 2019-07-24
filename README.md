@@ -58,7 +58,9 @@ You must able to get output like
 ## Running the tests
 
  To run all the automated test cases please use below command
- --> ./vendor/bin/phpunit UnitTestFiles/Test/
+```
+in project directory --> ./vendor/bin/phpunit UnitTestFiles/Test/
+```
 
 ### Break down into end to end tests
 
