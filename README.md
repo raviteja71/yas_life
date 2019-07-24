@@ -21,7 +21,10 @@ curl
 
 
 ```
-Give examples
+In Ubuntu:
+	php: sudo apt-get install php libapache2-mod-php
+	curl: sudo apt-get install php-curl
+	php unit :  composer require --dev phpunit/phpunit
 ```
 
 ### Installing
@@ -32,21 +35,16 @@ Place it anywhere in your system and configure the path.
 
 THe project will be ready
 
-```
-Give the example
+
 ```
 To run the Code.
 
-open the consolr and type 
+open the console and type 
 	ex1: php -f index.php Spain or
 	ex2: php -f index.php Spain England
-
-
-And repeat
-
+	
 ```
-until finished
-```
+
 
 You must able to get output like
 
